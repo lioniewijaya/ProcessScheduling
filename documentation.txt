@@ -1,0 +1,116 @@
+User documentation
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Before any of the program can be used, compile them with gcc into respective name. 
+    gcc -o task1-31316115 task1-31316115.c
+    gcc -o task2-31316115 task2-31316115.c
+    gcc -o task3-31316115 task3-31316115.c
+
+These programs are scheduler programs, each with different algorithm implemented according to assignment's specification.
+
+    For these scheduler programs, we will take an input file containing processes' information to use in the simulation.
+    During simulation, additional standard output messages are printed whenever scheduling happens for any process which enters the system, 
+    runs in the system, or finishes execution. The result of the simulation is written to text file results-taskN.txt according to the task number.
+
+    By default, the file used for the programs is "processes.txt" or if user wishes to use other filename, it can be specified in argv with an absolute path name.
+    e.g.    ./taskN-31316115 
+            runs the program using the specified algorithm with "processes.txt" file as input
+            ./taskN-31316115 /home/student/Desktop/FIT2100/sample.txt
+            runs the program using the specified algorithm with "sample.txt" file as input
+            *NOTE* N is the task number
+
+    Each line in the process data file (processes.txt or manual input from user) should contain space-separated values for a single process as follows:
+    [Process Name] [Arrival Time] [Service Time] [Deadline]
+    e.g.    A 0 2 6
+
+    Each line in the result output file (results-taskN.txt) should contain space-separated values for a single process as follows:
+    [Process Name] [Wait Time] [Turnaround Time] [Deadline Met]
+    e.g.    A 1 3 4
+
+    General assumption for all programs:
+    - At most 100 processes are given inside the input file.
+    - The processes in the input file are listed in order of arrival time.
+    - Process' name is never more than 10 characters in length and does not contain spaces.
+    - It is possible for two or more processes to have the same arrival time.
+    - Process' deadline is always greater or equal to the service time.
+    - Output file is ordered based on whichever process finished first.
+
+## Task 1 - Non-preemptive scheduling ##
+task1-31316115 is a scheduler program implemented with non-preemptive algorithm, First Come First Serve (FCFS).
+The program takes a file input and run the processes based on arrival time.
+Usage: 
+    to run this program, type ./task1-31316115 or ./task1-31316115 filepath
+Assumption(s): 
+    if two or more processes have the same arrival time, the first process to appear in the input file is run first.
+Test-case:
+    |Input       |
+    |P1 0 3 3    |
+    |P2 1 5 30   |
+    |P3 2 10 15  |
+    |P4 5 4 15   |
+    --------------
+    |Output      |
+    |P1 0 3 1    |
+    |P2 2 7 1    |
+    |P3 6 16 0   |
+    |P4 13 17 0  |
+    The processes are run in this order (P1 -> P2 -> P3 -> P4)
+
+## Task 2 - Preemptive scheduling ##
+task2-31316115 is a scheduler program implemented with preemptive algorithm, Shortest Remaining Time Next (SRTN) with quantum of 3.
+The program takes a file input and run the processes for 3 quantum time based on shortest remaining time left for each process.
+Usage: 
+    to run this program, type ./task2-31316115 or ./task2-31316115 filepath
+Assumption(s):
+    if two or more processes have the same shortest remaining time, the first process to appear in the input file is run first.
+Test-case:
+    |Input       |
+    |P1 0 3 3    |
+    |P2 1 5 30   |
+    |P3 2 10 15  |
+    |P4 5 4 15   |
+    --------------
+    |Output      |
+    |P1 0 3 1    |
+    |P2 2 7 1    |
+    |P4 3 7 1    |
+    |P3 10 20 0  |
+    The processes are run in this order (P1 -> P2 -> P4 -> P3)
+
+## Task 3 - Deadline-based scheduling ##
+task3-31316115 is a scheduler program implemented with non-preemptive, deadline-based algorithm, Earliest Deadline First (EDF).
+The program takes a file input and run the processes based on earliest deadline.
+Usage: 
+    to run this program, type ./task3-31316115 or ./task3-31316115 filepath
+Assumption(s): 
+    if two or more processes have the same earliest deadline, the first process to appear in the input file is run first.
+How and why it works:
+    Our goal is to maximise the number of processes that meet their specified deadlines. To achieve this, we used a non-preemptive based
+    scheduling algorithm that utilizes the value of deadline specified in input file which is Earliest Deadline First (EDF). The algorithm 
+    works by maintaining an array data structure containing PCBs which is traversed per each second to select and prioritise process with the 
+    earliest (shortest) deadline. Whenever a process needs to be scheduled, algorithm will go through all the processes in ready stage and select
+    the process with the closest deadline to run until termination before repeating the same steps. 
+    With this algorithm, the process with the most urgent deadline is always prioritised to be run first before going through other processes, 
+    thus this increases the probability of meeting deadlines for the processes. This algorithm will always ensure at least one process (first process 
+    run in scheduler) meets the deadline (as it is non pre-emptive). This algorithm works best in cases where the processes run in each order have deadline 
+    long enough to wait for the termination of previous processes, especially in cases where the arrival times and deadlines are spaced out evenly and
+    the scheduler is not overloaded with too many processes arriving in the same time and same deadline.
+    Sample explanation is provided in test-case.
+Test-case:
+    |Input       |
+    |P1 0 3 3    |
+    |P2 1 5 30   |
+    |P3 2 10 15  |
+    |P4 5 4 15   |
+    --------------
+    |Output      |
+    |P1 0 3 1    |
+    |P3 1 11 1   |
+    |P4 8 12 1   |
+    |P2 16 21 1  |
+    The processes are run in this order (P1 -> P3 -> P4 -> P2)
+    Explanation:
+    P1 is run until termination as only P1 is available at time 0. After P1's termination, the available processes are P2 (deadline 30) and P3 (deadline 15).
+    P3 is run until termination as it has earlier deadline. After P3's termination, the available processes are P2 (deadline 30) and P4 (deadline 1).
+    P4 is run until termination as it has earlier deadline. Finally, P2 is run until termination.
+    During each second of the running program, each processes stated above happens to finish before the deadline given thus producing 1s indicating deadline was met.
